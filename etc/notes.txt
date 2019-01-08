@@ -1,0 +1,18 @@
+
+1：sphinx
+eg.
+/usr/local/sphinx/bin/indexer -c /usr/local/sphinx/etc/wzhouhui.conf --all --rotate
+/usr/local/sphinx/bin/indexer -c /usr/local/sphinx/etc/wzhouhui.conf wzhouhui --rotate
+
+
+2：coreseek
+eg.
+/usr/local/coreseek/bin/indexer -c /usr/local/coreseek/etc/wzhui.conf --all --rotate
+/usr/local/coreseek/bin/indexer -c /usr/local/coreseek/etc/wzhui.conf wzhouhui --rotate
+
+
+
+五洲会的中文配置文件在配置svn中提交即可。test 999
+(也就是说在配置svn里面提交修改就可以http://svn.egomsl.com/svn/repos/config/sphinx/test/etc/wzhui.conf)
+/usr/local/sphinx/etc/wzhui.conf 软连接到 /usr/local/coreseek/etc/wzhui.conf
+
