@@ -38,7 +38,7 @@ class Http
     {
         if (!strpos($recv_buffer, "\r\n\r\n")) {
             // Judge whether the package length exceeds the limit.
-            if (strlen($recv_buffer) >= $connection->maxPackageSize) {
+            if (strlen($recv_buffer) >= $connection::$maxPackageSize) {
                 $connection->close();
                 return 0;
             }
@@ -73,7 +73,7 @@ class Http
             $content_length = isset($match[1]) ? $match[1] : 0;
             return $content_length + strlen($header) + 4;
         }
-        return $method === 'DELETE' ? strlen($header) + 4 : 0;
+        return 0;
     }
 
     /**
@@ -159,17 +159,9 @@ class Http
                 case 'CONTENT_LENGTH':
                     $_SERVER['CONTENT_LENGTH'] = $value;
                     break;
-                case 'UPGRADE':
-					if($value=='websocket'){
-						$connection->protocol = "\\Workerman\\Protocols\\Websocket";
-						return \Workerman\Protocols\Websocket::input($recv_buffer,$connection);
-					}
-                    break;
             }
         }
-		if(isset($_SERVER['HTTP_ACCEPT_ENCODING']) && strpos($_SERVER['HTTP_ACCEPT_ENCODING'], 'gzip') !== FALSE){
-			HttpCache::$gzip = true;
-		}
+
         // Parse $_POST.
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (isset($_SERVER['CONTENT_TYPE'])) {
@@ -257,10 +249,7 @@ class Http
                 $header .= $item . "\r\n";
             }
         }
-		if(HttpCache::$gzip && isset($connection->gzip) && $connection->gzip){
-			$header .= "Content-Encoding: gzip\r\n";
-			$content = gzencode($content,$connection->gzip);
-		}
+
         // header
         $header .= "Server: workerman/" . Worker::VERSION . "\r\nContent-Length: " . strlen($content) . "\r\n\r\n";
 
@@ -382,7 +371,7 @@ class Http
             return $id ? session_id($id) : session_id();
         }
         if (static::sessionStarted() && HttpCache::$instance->sessionFile) {
-            return str_replace('ses_', '', basename(HttpCache::$instance->sessionFile));
+            return str_replace('sess_', '', basename(HttpCache::$instance->sessionFile));
         }
         return '';
     }
@@ -455,11 +444,11 @@ class Http
         }
         HttpCache::$instance->sessionStarted = true;
         // Generate a SID.
-        if (!isset($_COOKIE[HttpCache::$sessionName]) || !is_file(HttpCache::$sessionPath . '/ses_' . $_COOKIE[HttpCache::$sessionName])) {
+        if (!isset($_COOKIE[HttpCache::$sessionName]) || !is_file(HttpCache::$sessionPath . '/sess_' . $_COOKIE[HttpCache::$sessionName])) {
             // Create a unique session_id and the associated file name.
             while (true) {
                 $session_id = static::sessionCreateId();
-                if (!is_file($file_name = HttpCache::$sessionPath . '/ses_' . $session_id)) break;
+                if (!is_file($file_name = HttpCache::$sessionPath . '/sess_' . $session_id)) break;
             }
             HttpCache::$instance->sessionFile = $file_name;
             return self::setcookie(
@@ -473,7 +462,7 @@ class Http
             );
         }
         if (!HttpCache::$instance->sessionFile) {
-            HttpCache::$instance->sessionFile = HttpCache::$sessionPath . '/ses_' . $_COOKIE[HttpCache::$sessionName];
+            HttpCache::$instance->sessionFile = HttpCache::$sessionPath . '/sess_' . $_COOKIE[HttpCache::$sessionName];
         }
         // Read session from session file.
         if (HttpCache::$instance->sessionFile) {
@@ -565,7 +554,7 @@ class Http
                                 'file_data' => $boundary_value,
                                 'file_size' => strlen($boundary_value),
                             );
-                            continue 2;
+                            continue;
                         } // Is post field.
                         else {
                             // Parse $_POST.
@@ -661,7 +650,6 @@ class HttpCache
      */
     public static $instance             = null;
     public static $header               = array();
-    public static $gzip                 = false;
     public static $sessionPath          = '';
     public static $sessionName          = '';
     public static $sessionGcProbability = 1;
