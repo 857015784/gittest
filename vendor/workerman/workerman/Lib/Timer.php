@@ -14,7 +14,6 @@
 namespace Workerman\Lib;
 
 use Workerman\Events\EventInterface;
-use Workerman\Worker;
 use Exception;
 
 /**
