@@ -38,11 +38,11 @@ class Cache
     public function __construct()
     {
 
-        if( ENV == 'product' ){
-            \think\Config::load(APP_PATH.'/config.php');
-        }else{
-            \think\Config::load(APP_PATH.'/config.dev.php');
-        }
+//        if( ENV == 'product' ){
+//            \think\Config::load(APP_PATH.'/config.php');
+//        }else{
+//            \think\Config::load(APP_PATH.'/config.dev.php');
+//        }
     }
 
     /**

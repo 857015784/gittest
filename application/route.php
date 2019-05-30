@@ -16,6 +16,8 @@ Route::get('pushmq', 'index/Index/pushmq');//推送mq
 Route::get('callback', 'index/Index/callback');//消费mq
 Route::get('cache', 'index/Index/cache');//缓存回调
 Route::get('sphinx', 'index/Index/sphinx');//缓存回调
-Route::get('celue', 'index/Index/celue');//缓存回调
-Route::get('facade', 'index/Index/facade');//缓存回调
-Route::get('factory', 'index/Index/factory');//缓存回调
+Route::get('celue', 'index/Index/celue');//策略模式
+Route::get('facade', 'index/Index/facade');//外观模式
+Route::get('factory', 'index/Index/factory');//工厂模式
+Route::get('guzzle', 'index/Index/guzzle');//GuzzleHttps示例 ---替代curl
+Route::get('/msg/test', 'index/Msg/test');

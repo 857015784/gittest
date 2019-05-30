@@ -17,12 +17,13 @@
     ],
     "require": {
         "php": ">=5.4.0",
-        "topthink/framework": "5.0.*"
+        "topthink/framework": "5.0.*",
+        "guzzlehttp/guzzle": "~6.0",
+        "matyhtf/swoole_framework": "dev-master"
     },
     "autoload": {
         "psr-4": {
-            "app\\": "application",
-            "Mq\\Rabbitmq\\": "vendor/mq/rabbitmq/src/"
+            "app\\": "application"
         }
     },
     "extra": {
