@@ -14,7 +14,6 @@ use think\Config;
  * Class WCache
  * 缓存回调实现,数据压缩
  */
-
 class Cache
 {
     const TYPE_STRING = 1;
@@ -22,19 +21,19 @@ class Cache
     const TYPE_SET = 2;
 
     //大于 COMPRESS_LEN+4 才会自动执行压缩
-    static $compressLen = 10000;
+    const  TEST = 'test';
 
     //缓存失效时间3小时
+    static $compressLen = 10000;
     static $expireTime = 60 * 60 * 2;
-
-    const  TEST = 'test';
 
 
     //回调方法配置 string型缓存 type 选填
     static $keyMap = [
-        self::TEST              => ['class' => '\\app\\index\\model\\Comment', 'type' => self::TYPE_STRING],
+        self::TEST => ['class' => '\\app\\index\\model\\Comment', 'type' => self::TYPE_STRING],
 
     ];
+
     public function __construct()
     {
 
@@ -60,15 +59,14 @@ class Cache
 
         $cacheKey = self::getKey($key, $params);
 
-        if(isset($datas[$cacheKey])){
+        if (isset($datas[$cacheKey])) {
             //file_put_contents(ROOT_PATH.'/runtime/logs/static',$cacheKey.':'.date('y-m-d H:i:s').PHP_EOL,FILE_APPEND);
             return $datas[$cacheKey];
         }
-
         $cache = new CacheAgent();
-        $data  = $cache->get($cacheKey );
+        $data  = $cache->get($cacheKey);
         //兼容不同版本的redis
-        if ($data!==null && $data!==false) {
+        if ($data !== null && $data !== false) {
             //取出操作位
             $operate = substr($data, 0, 3);
             $data    = substr($data, 4);
@@ -76,13 +74,39 @@ class Cache
             list($isCompress, $isArray) = explode(':', $operate);
 
             $isCompress && $data = gzuncompress($data);
-            $isArray && $data = json_decode($data,true);
+            $isArray && $data = json_decode($data, true);
 
         } else {
             $data = static::reset($key, $params);
         }
         $datas[$cacheKey] = $data;
         return $data;
+    }
+
+    /**
+     * 获取缓存key
+     * @param string $key
+     * @param array $group
+     * @return string
+     * Author: wanghuabin
+     * Time: 2019/3/30   10:39
+     */
+    public static function getKey(string $key, array $group = []): string
+    {
+
+
+        ksort($group);
+        foreach ($group as $col => $item) {
+            $group[$col] = strtolower((string)$item);
+        }
+
+
+        $groupKey = '';
+
+        if (count($group) > 0) {
+            $groupKey = ':' . implode(':', $group);
+        }
+        return Config::get('CachePrefix') . ':' . $key . $groupKey;
     }
 
     /**
@@ -96,13 +120,13 @@ class Cache
      */
     public static function reset($key, $params = array())
     {
-        if(!isset(static::$keyMap[$key])){
+        if (!isset(static::$keyMap[$key])) {
             throw new \Exception("{$key}缓存不存在");
         }
 
-        $class     = new static::$keyMap[$key]['class'];
-        $method    = $key . 'Source';
-        $data      = call_user_func_array(array($class, $method), $params);
+        $class  = new static::$keyMap[$key]['class'];
+        $method = $key . 'Source';
+        $data   = call_user_func_array(array($class, $method), $params);
         self::set($key, $params, $data);
         return $data;
 
@@ -122,7 +146,7 @@ class Cache
 
         $cacheMethod = '';
         $cache       = new CacheAgent();
-        $cacheKey         = self::getKey($key, $params);
+        $cacheKey    = self::getKey($key, $params);
 
         $type       = isset(static::$keyMap[$key]['type']) ? static::$keyMap[$key]['type'] : self::TYPE_STRING;
         $expireTime = isset(static::$keyMap[$key]['expire']) ? static::$keyMap[$key]['expire'] : self::$expireTime;
@@ -154,65 +178,51 @@ class Cache
 
     }
 
-    /**
-     * 获取缓存key
-     * @param string $key
-     * @param array $group
-     * @return string
-     * Author: wanghuabin
-     * Time: 2019/3/30   10:39
-     */
-    public static  function getKey(string $key, array $group = []): string
+    public static function del(string $key, array $params = [])
+    {
+        $key   = self::getKey($key, $params);
+        $cache = new CacheAgent();
+        return $cache->delete($key);
+    }
+
+    public static function delByKey(string $key)
     {
 
-
-        ksort($group);
-        foreach($group as $col=>$item){
-            $group[$col]= strtolower((string)$item);
-        }
-
-
-        $groupKey = '';
-
-        if(count($group)>0){
-            $groupKey = ':'.implode(':', $group);
-        }
-        return Config::get('CachePrefix').':'.$key . $groupKey;
-    }
-
-    public static function del(string $key, array $params = []){
-        $key = self::getKey($key, $params);
         $cache = new CacheAgent();
         return $cache->delete($key);
     }
 
-    public static function delByKey(string $key){
+    public static function rpush(string $key, string $value, array $group = [])
+    {
 
+        $key   = self::getKey($key, $group);
         $cache = new CacheAgent();
-        return $cache->delete($key);
+        return $cache->rpush($key, $value);
     }
 
-    public  static function rpush(string $key,string $value,array $group = []){
+    public static function lpop(string $key, array $group = [])
+    {
 
-        $key = self::getKey($key, $group);
-        $cache = new CacheAgent();
-        return $cache->rpush($key,$value);
-    }
-
-    public static function lpop(string $key,array $group = []){
-
-        $key = self::getKey($key, $group);
+        $key   = self::getKey($key, $group);
         $cache = new CacheAgent();
         return $cache->lpop($key);
     }
 
-    public static  function initCache(){
-        if(empty(self::$cache)){
+    public static function initCache()
+    {
+        if (empty(self::$cache)) {
             self::$cache = new CacheAgent();
         }
     }
 
-    public static function  newCache(){
+    public static function newCache()
+    {
         \components\Redis::newRedis();
+    }
+
+    //redis方法调用
+    public function redis($cacheMethod,$params){
+        $cache       = new CacheAgent();
+        return call_user_func_array(array($cache, $cacheMethod),$params);
     }
 }

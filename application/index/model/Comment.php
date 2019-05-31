@@ -17,7 +17,8 @@ class Comment extends baseModel
     public function insertdata($data){
         return $this->insertdata($data);
     }
+    //回调函数
     public function testSource(){
-        return '3333ssss3333';
+        return ['12223', '321'];
     }
 }

@@ -115,10 +115,12 @@ class Index
     public function cache()
     {
         $cache = new Cache();
+        //$key = $cache::getKey($cache::TEST,['a', 'b']);//获取rediskey
+        //$r = $cache->redis('increment',['t']);//数据自增
         //设置缓存
-//        $cache::set($cache::TEST, ['a', 'b'], ['12223', '321']);
+        //$cache::set($cache::TEST, ['a', 'b'], ['12223', '321']);
       //  读取缓存（缓存不存在会自动设置缓存【回调方法】）
-        $r = $cache::get($cache::TEST);
+        $r = $cache::get($cache::TEST,['a', 'b']);
         print_r($r);
         die;
     }

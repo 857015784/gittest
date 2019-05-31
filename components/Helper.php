@@ -17,13 +17,8 @@ class Helper
 
     public function __construct()
     {
-
-        if( ENV == 'product' ){
-            \think\Config::load(APP_PATH.'/config.php');
-        }else{
-            \think\Config::load(APP_PATH.'/config.dev.php');
-        }
     }
+
     /**
      * @param string $configKey 调用的队列组
      * @param string $config MQ配置信息
@@ -39,7 +34,7 @@ class Helper
             $config = Config::get('MQinfo');
         if ($log == '')
             $log = Config::get('MQlog');
-        vendor ('mq.rabbitmq.src.XcmqClient');
+        vendor('mq.rabbitmq.src.XcmqClient');
         $client = new XcmqClient(['config' => $config, 'log' => $log], $configKey);
 
 
